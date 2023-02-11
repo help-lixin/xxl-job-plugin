@@ -1,0 +1,45 @@
+server:
+  port: 9090
+
+
+job:
+  name: test
+
+group: DEFAULT
+
+spring:
+  application:
+    name: xxl-job-integration-example
+  main:
+    allow-bean-definition-overriding: true
+
+xxl:
+  tasks:
+#    - beanName: testJob
+#      executorMethod: test1
+#      jobDesc: Ebay订单下载
+#      scheduleValue: 0/15 * * * * ?
+    - beanName: testJob
+      executorMethod: test2
+      jobDesc: Shopify订单下载
+      scheduleValue: 0/30 * * * * ?
+  job:
+    isLazy: false
+    admin:
+      # 调度中心的部署地址,若调度中心采用集群部署，存在多个地址，则用逗号分隔
+      addresses: http://127.0.0.1:8080/xxl-job-admin/
+      # xxl-job-admin 账号
+      username: admin
+      # xxl-job-admin 密码
+      password: 123456
+    executor:
+      # 执行器输出的日志文件的存储路径
+      logpath: /tmp/
+      # 执行器日志文件的定期清理功能,指定日志保存天数,日志文件过期自动删除.限制至少保存3天,否则功能不生效.
+      logretentiondays: 1
+      # 执行器的应用名称,它是执行器心跳注册的分组依据
+      appName: ${spring.application.name}
+      # 执行器的端口号
+      port: ${random.int[1025,65535]}
+      #注册器名称 中文名
+      desc: xxl-job定时任务测试

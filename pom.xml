@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <groupId>help.lixin.xxl.job</groupId>
+    <artifactId>xxl-job-plugin-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>xxl-job-plugin-parent</name>
+    <packaging>pom</packaging>
+    <modelVersion>4.0.0</modelVersion>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+
+
+        <xxl-job-core.version>2.3.0</xxl-job-core.version>
+        <fastjson.version>1.2.80</fastjson.version>
+        <unirest-java.version>3.13.4</unirest-java.version>
+        <spring-cloud.version>2020.0.1</spring-cloud.version>
+        <spring-boot-dependencies.version>2.4.2</spring-boot-dependencies.version>
+        <spring-cloud-netflix.version>3.0.0</spring-cloud-netflix.version>
+        <spring-cloud-alibaba-dependencies>2021.1</spring-cloud-alibaba-dependencies>
+        <spring-cloud-tencent.version>1.8.5-2020.0.5</spring-cloud-tencent.version>
+    </properties>
+
+    <modules>
+        <module>xxl-job-integration</module>
+        <module>xxl-job-integration-example</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot-dependencies.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-netflix</artifactId>
+                <version>${spring-cloud-netflix.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba-dependencies}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.tencent.cloud</groupId>
+                <artifactId>spring-cloud-tencent-dependencies</artifactId>
+                <version>${spring-cloud-tencent.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
