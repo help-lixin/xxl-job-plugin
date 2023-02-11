@@ -330,7 +330,12 @@ public class XxlJobSpringExecutor extends com.xxl.job.core.executor.impl.XxlJobS
         jobTask.setInitMethod(xxlJob.init());
         jobTask.setDestroyMethod(xxlJob.destroy());
         jobTask.setScheduleType(xxlJob.scheduleType().getDesc());
-        jobTask.setScheduleValue(xxlJob.scheduleValue());
+
+        String scheduleValue = xxlJob.scheduleValue();
+        if (null != scheduleValue && null != getApplicationContext()) {
+            scheduleValue = getApplicationContext().getEnvironment().resolvePlaceholders(scheduleValue);
+        }
+        jobTask.setScheduleValue(scheduleValue);
         jobTask.setMisfireStrategy(xxlJob.misfireStrategy().getDesc());
         jobTask.setExecutorParam(xxlJob.executorParam());
         jobTask.setExecutorRouteStrategy(xxlJob.routeStrategy().getDesc());
