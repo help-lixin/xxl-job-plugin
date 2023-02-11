@@ -66,5 +66,12 @@ public interface IJobInvokeService {
 } // end IJobInvokeService
 ```
 
-### 3. 代码贡献者
-感谢[清源](https://github.com/caiqingyuan95),对xxl-job-plugin的代码贡献. 
+### 3. 延迟加载机制
+```
+xxl.job.isLazy=true
+
+# 在某些场景下,我们的微服务,可能还没有来得及全部初始化(比如:数据源),可是,进程启动时,已经向xxl-job-admin进行了注册,正好xxl-job-admin也开始派发了任务.
+# 这时候,可能会出现错误,你可以配置上面这个配置项,这个配置项的目的是等待一个事件(BootstrapFinishEvent)触发后,才真正的向xxl-job-admin进行注册.     
+```
+### 4. 代码贡献者
+感谢[清源](https://github.com/caiqingyuan95),对xxl-job-plugin部份代码的贡献.  
