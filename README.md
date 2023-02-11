@@ -65,3 +65,6 @@ public interface IJobInvokeService {
     void execute(JobInvokeContext ctx) throws Exception;
 } // end IJobInvokeService
 ```
+
+### 3. 代码贡献者
+感谢[清源](https://github.com/caiqingyuan95),对xxl-job-plugin的代码贡献. 
