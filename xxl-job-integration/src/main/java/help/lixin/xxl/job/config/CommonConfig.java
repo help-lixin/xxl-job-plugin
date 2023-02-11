@@ -4,15 +4,16 @@ package help.lixin.xxl.job.config;
 import help.lixin.xxl.job.autoregsiter.XxlJobAutoRegsiterService;
 import help.lixin.xxl.job.mediator.CookieMediator;
 import help.lixin.xxl.job.mediator.XxlJobsMediator;
-import help.lixin.xxl.job.plugin.IJobNameProcess;
+import help.lixin.xxl.job.plugin.IAppNameProcess;
 import help.lixin.xxl.job.plugin.IJobInvokeService;
 import help.lixin.xxl.job.plugin.DefaultJobInvokeService;
-import help.lixin.xxl.job.plugin.impl.DefaultJobNameProcess;
+import help.lixin.xxl.job.plugin.impl.DefaultAppNameProcess;
 import help.lixin.xxl.job.properties.XxlJobProperties;
 import help.lixin.xxl.job.service.*;
 import help.lixin.xxl.job.service.impl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,14 +48,22 @@ public class CommonConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public ISaveExecutorService saveExecutorService(XxlJobProperties xxlJobProperties, CookieMediator cookieMediator) {
-        return new SaveExecutorServerImpl(xxlJobProperties, cookieMediator);
+    public ISaveExecutorService saveExecutorService(XxlJobProperties xxlJobProperties,
+                                                    //
+                                                    @Autowired(required = false) IAppNameProcess appNameProcess,
+                                                    //
+                                                    CookieMediator cookieMediator) {
+        return new SaveExecutorServerImpl(xxlJobProperties, appNameProcess, cookieMediator);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public IQueryExecutorService queryExecutorService(XxlJobProperties xxlJobProperties, CookieMediator cookieMediator) {
-        return new QueryExecutorServerImpl(xxlJobProperties, cookieMediator);
+    public IQueryExecutorService queryExecutorService(XxlJobProperties xxlJobProperties,
+                                                      //
+                                                      @Autowired(required = false) IAppNameProcess appNameProcess,
+                                                      //
+                                                      CookieMediator cookieMediator) {
+        return new QueryExecutorServerImpl(xxlJobProperties, appNameProcess, cookieMediator);
     }
 
     @Bean
@@ -70,10 +79,7 @@ public class CommonConfig {
     }
 
     @Bean
-    public IRuningAddJobService runAddJobService(
-            IAddJobService iAddJobService,
-            IQueryExecutorService queryExecutorService,
-            XxlJobProperties xxlJobProperties) {
+    public IRuningAddJobService runAddJobService(IAddJobService iAddJobService, IQueryExecutorService queryExecutorService, XxlJobProperties xxlJobProperties) {
         return new RuningAddJobServerImpl(iAddJobService, queryExecutorService, xxlJobProperties);
     }
 
@@ -92,8 +98,8 @@ public class CommonConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public IJobNameProcess jobNameProcess() {
-        return new DefaultJobNameProcess();
+    public IAppNameProcess appNameProcess() {
+        return new DefaultAppNameProcess();
     }
 
     @Bean

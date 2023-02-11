@@ -3,6 +3,7 @@ package help.lixin.xxl.job.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import help.lixin.xxl.job.mediator.CookieMediator;
 import help.lixin.xxl.job.model.XxlJobServiceResponse;
+import help.lixin.xxl.job.plugin.IAppNameProcess;
 import help.lixin.xxl.job.properties.XxlJobProperties;
 import help.lixin.xxl.job.service.AbstractService;
 import help.lixin.xxl.job.service.ISaveExecutorService;
@@ -21,9 +22,14 @@ public class SaveExecutorServerImpl extends AbstractService implements ISaveExec
 
     private XxlJobProperties xxlJobProperties;
 
-    public SaveExecutorServerImpl(XxlJobProperties xxlJobProperties, CookieMediator cookieMediator) {
+    private IAppNameProcess appNameProcess;
+
+    public SaveExecutorServerImpl(XxlJobProperties xxlJobProperties, IAppNameProcess appNameProcess, CookieMediator cookieMediator) {
         super(cookieMediator);
         this.xxlJobProperties = xxlJobProperties;
+        if (null != appNameProcess) {
+            this.appNameProcess = appNameProcess;
+        }
     }
 
     private static final String ADD_GROUP_URL = "jobgroup/save";
@@ -32,9 +38,14 @@ public class SaveExecutorServerImpl extends AbstractService implements ISaveExec
     @Override
     public void save(XxlJobContext ctx) throws Exception {
         SaveExecuorContext queryExecuorContext = (SaveExecuorContext) ctx;
+        String appName = queryExecuorContext.getAppname();
+        if (null != appName && null != appNameProcess) {
+            appName = appNameProcess.process(appName);
+        }
+
         String url = xxlJobProperties.getAdminAddresses() + ADD_GROUP_URL;
         Map<String, Object> param = new HashMap<>();
-        param.put("appname", queryExecuorContext.getAppname());
+        param.put("appname", appName);
         param.put("title", queryExecuorContext.getTitle());
         param.put("addressType", "0");
         XxlJobServiceResponse<JSONObject> result = XxlJobUtil.doPostByXForm(url, this.getCookieMediator().cookie, param);

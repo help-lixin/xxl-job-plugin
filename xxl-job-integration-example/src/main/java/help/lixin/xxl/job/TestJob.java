@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Component
 public class TestJob {
-    @XXLJob(name = "${job.name}", scheduleValue = "0/15 * * * * ?", desc = "Ebay订单下载")
+    @XXLJob(name = "${job.name}", scheduleValue = "0/30 * * * * ?", desc = "Ebay订单下载")
     public void test1() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss");
         System.out.println(simpleDateFormat.format(new Date()) + " test-1 hello world-----1!!!!");

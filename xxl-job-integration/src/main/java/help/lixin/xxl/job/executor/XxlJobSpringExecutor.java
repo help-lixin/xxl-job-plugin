@@ -9,7 +9,6 @@ import help.lixin.xxl.job.annotation.TaskStatus;
 import help.lixin.xxl.job.annotation.XXLJob;
 import help.lixin.xxl.job.autoregsiter.XxlJobAutoRegsiterService;
 import help.lixin.xxl.job.mediator.XxlJobsMediator;
-import help.lixin.xxl.job.plugin.IJobNameProcess;
 import help.lixin.xxl.job.plugin.IJobInvokeService;
 import help.lixin.xxl.job.properties.JobTaskProperties;
 import help.lixin.xxl.job.properties.JobTasksListProperties;
@@ -41,8 +40,6 @@ public class XxlJobSpringExecutor extends com.xxl.job.core.executor.impl.XxlJobS
 
     private XxlJobProperties xxlJobProperties;
 
-    private IJobNameProcess jobNameProcess;
-
     private IJobInvokeService jobInvokeService;
 
     private XxlJobsMediator xxlJobsMediator;
@@ -60,8 +57,6 @@ public class XxlJobSpringExecutor extends com.xxl.job.core.executor.impl.XxlJobS
                                 //
                                 ILoginService loginService,
                                 //
-                                IJobNameProcess jobNameProcess,
-                                //
                                 IJobInvokeService jobInvokeService,
                                 //
                                 boolean isLazy) {
@@ -70,9 +65,6 @@ public class XxlJobSpringExecutor extends com.xxl.job.core.executor.impl.XxlJobS
         this.jobTasksListProperties = jobTasksListProperties;
         this.xxlJobsMediator = xxlJobsMediator;
         this.xxlJobAutoRegsiterService = xxlJobAutoRegsiterService;
-        if (null != jobNameProcess) {
-            this.jobNameProcess = jobNameProcess;
-        }
         if (null != jobInvokeService) {
             this.jobInvokeService = jobInvokeService;
         }
@@ -194,10 +186,6 @@ public class XxlJobSpringExecutor extends com.xxl.job.core.executor.impl.XxlJobS
                 // 预处理下表达式
                 oldJobName = getApplicationContext().getEnvironment().resolvePlaceholders(oldJobName);
                 String name = oldJobName;
-                if (null != jobNameProcess) { // 对jobName进行处理
-                    name = jobNameProcess.process(oldJobName);
-                    logger.debug("xxl job -- rename jobName:[{}]  --> jobName:[{}]", oldJobName, name);
-                }
                 if (loadJobHandler(name) != null) {
                     logger.info("erp-xxl-job jobhandler[" + name + "] naming conflicts.");
                     return;
@@ -282,11 +270,6 @@ public class XxlJobSpringExecutor extends com.xxl.job.core.executor.impl.XxlJobS
                 // 预处理下表达式
                 oldJobName = applicationContext.getEnvironment().resolvePlaceholders(oldJobName);
                 String name = oldJobName;
-                if (null != jobNameProcess) { // 对jobName进行处理
-                    name = jobNameProcess.process(oldJobName);
-                    logger.debug("xxl job -- rename jobName:[{}]  --> jobName:[{}]", oldJobName, name);
-                }
-
                 // 任务已经存在,抛异常
                 if (loadJobHandler(name) != null) {
                     throw new RuntimeException("xxl-job jobhandler[" + name + "] naming conflicts.");

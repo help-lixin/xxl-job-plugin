@@ -6,7 +6,7 @@ import help.lixin.xxl.job.event.IBootstrapFinishHandler;
 import help.lixin.xxl.job.event.impl.BootstrapFinishHandler;
 import help.lixin.xxl.job.executor.XxlJobSpringExecutor;
 import help.lixin.xxl.job.mediator.XxlJobsMediator;
-import help.lixin.xxl.job.plugin.IJobNameProcess;
+import help.lixin.xxl.job.plugin.IAppNameProcess;
 import help.lixin.xxl.job.plugin.IJobInvokeService;
 import help.lixin.xxl.job.properties.JobTasksListProperties;
 import help.lixin.xxl.job.properties.XxlJobProperties;
@@ -48,15 +48,19 @@ public class XxlJobConfig {
                                          XxlJobAutoRegsiterService xxlJobAutoRegsiterService,
                                          //
                                          ILoginService loginService,
-                                         //
-                                         @Autowired(required = false) IJobNameProcess jobNameProcess,
+                                         @Autowired(required = false) IAppNameProcess appNameProcess,
                                          //
                                          @Autowired(required = false) IJobInvokeService jobInvokeService) {
         Boolean isLazy = environment.getProperty(IS_LAZY, Boolean.class, Boolean.FALSE);
 
-        XxlJobExecutor xxlJobExecutor = new XxlJobSpringExecutor(xxlJobProperties, jobTasksListProperties, xxlJobsMediator, xxlJobAutoRegsiterService, loginService, jobNameProcess, jobInvokeService, isLazy);
+        XxlJobExecutor xxlJobExecutor = new XxlJobSpringExecutor(xxlJobProperties, jobTasksListProperties, xxlJobsMediator, xxlJobAutoRegsiterService, loginService, jobInvokeService, isLazy);
         xxlJobExecutor.setAdminAddresses(xxlJobProperties.getAdminAddresses());
-        xxlJobExecutor.setAppname(xxlJobProperties.getAppName());
+        String appName = xxlJobProperties.getAppName();
+        if (null != appName && null != appNameProcess) {
+            appName = appNameProcess.process(appName);
+        }
+        xxlJobExecutor.setAppname(appName);
+
         xxlJobExecutor.setAddress(xxlJobProperties.getAddress());
         xxlJobExecutor.setIp(xxlJobProperties.getIp());
         xxlJobExecutor.setPort(xxlJobProperties.getPort());

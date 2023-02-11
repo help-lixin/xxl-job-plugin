@@ -91,11 +91,4 @@ public @interface XXLJob {
      * 销毁方法
      */
     String destroy() default "";
-
-    /**
-     * xxl-job所属分组(配合将来使用)
-     *
-     * @return
-     */
-    String group() default "";
 }

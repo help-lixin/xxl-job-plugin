@@ -1,18 +1,22 @@
 package help.lixin.xxl.job.properties;
 
+import help.lixin.xxl.job.plugin.IAppNameProcess;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 @RefreshScope
-@ConfigurationProperties(prefix=XxlJobProperties.XXL_JOB_PREFIX)
-public class XxlJobProperties {
+@ConfigurationProperties(prefix = XxlJobProperties.XXL_JOB_PREFIX)
+public class XxlJobProperties implements ApplicationContextAware {
 
     public static final String XXL_JOB_PREFIX = "xxl.job.info";
 
     public static final Boolean ENABLED = Boolean.TRUE;
     /**
-     *执行器生效情况 默认为true
+     * 执行器生效情况 默认为true
      */
     @Value("${xxl.job.enabled:false}")
     private Boolean enabled = XxlJobProperties.ENABLED;
@@ -32,17 +36,17 @@ public class XxlJobProperties {
     @Value("${xxl.job.admin.password:123456}")
     private String password;
     /**
-    执行器通讯TOKEN 非空时启用
+     * 执行器通讯TOKEN 非空时启用
      **/
     @Value("${xxl.job.accessToken:}")
     private String accessToken;
     /**
-     *执行器的应用名称,它是执行器心跳注册的分组依据
+     * 执行器的应用名称,它是执行器心跳注册的分组依据
      */
     @Value("${xxl.job.executor.appName:${spring.application.name}}")
     private String appName;
     /**
-     *执行器名称 中文名
+     * 执行器名称 中文名
      */
     @Value("${xxl.job.executor.desc:}")
     private String appDesc;
@@ -52,12 +56,12 @@ public class XxlJobProperties {
     @Value("${xxl.job.executor.address:#{null}}")
     private String address;
     /**
-     *执行器注册ip
+     * 执行器注册ip
      */
-    @Value("${xxl.job.executor.ip:#{null}}" )
+    @Value("${xxl.job.executor.ip:#{null}}")
     private String ip;
     /**
-     *执行器注册端口
+     * 执行器注册端口
      */
     @Value("${xxl.job.executor.port:9977}")
     private int port;
@@ -67,7 +71,7 @@ public class XxlJobProperties {
     @Value("${xxl.job.executor.logpath:}")
     private String logPath;
     /**
-     *  执行器日志文件保存天数 : 过期日志自动清理, 限制值大于等于3时生效; 否则, 如-1, 关闭自动清理功能
+     * 执行器日志文件保存天数 : 过期日志自动清理, 限制值大于等于3时生效; 否则, 如-1, 关闭自动清理功能
      */
     @Value("${xxl.job.executor.logretentiondays:30}")
     private int logRetentionDays;
@@ -186,4 +190,11 @@ public class XxlJobProperties {
                 ", logRetentionDays=" + logRetentionDays +
                 '}';
     }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    private ApplicationContext applicationContext;
 }

@@ -24,7 +24,7 @@ xxl:
       jobDesc: Shopify订单下载
       scheduleValue: 0/40 * * * * ?
   job:
-    isLazy: false
+    isLazy: true
     admin:
       # 调度中心的部署地址,若调度中心采用集群部署，存在多个地址，则用逗号分隔
       addresses: http://127.0.0.1:8080/xxl-job-admin/

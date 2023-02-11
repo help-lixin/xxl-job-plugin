@@ -29,7 +29,6 @@ public class MethodJobHandler extends com.xxl.job.core.handler.IJobHandler {
         JobInvokeContext ctx = new JobInvokeContext();
         ctx.setMethod(method);
         ctx.setTarget(target);
-
         jobInvokeService.execute(ctx);
     }
 

@@ -46,13 +46,13 @@ public class QueryJobServerImpl extends AbstractService implements IQueryJobServ
         param.put(EXECUTOR_HANDLER, queryJobContext.getExecutorHandler());
         XxlJobServiceResponse<JSONObject> data = XxlJobUtil.doPostByXForm(url, this.getCookieMediator().getCookie(), param);
         if (data == null || data.getCode() != 200) {
-            throw new RuntimeException("GErp_Xxl-job job queryJobByDesc fail");
+            throw new RuntimeException("xxl-job job queryJobByDesc fail");
         }
         JSONArray jsonArray = data.getData().getJSONArray("data");
         if (jsonArray != null && jsonArray.size() > 0) {
             xxlJobInfo = jsonArray.toJavaList(XxlJobInfo.class).get(0);
         }
-        logger.info("GErp-xxl-job QueryJobServerImpl queryJobByDesc result:{}", data);
+        logger.info("xxl-job QueryJobServerImpl queryJobByDesc result:{}", data);
         return xxlJobInfo;
     }
 }
