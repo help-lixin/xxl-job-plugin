@@ -8,5 +8,5 @@ public interface IRuningAddJobService {
      * @param AddJobContext ctx
      * @throws
      */
-    Integer add(XxlJobContext ctx);
+    Integer addAndRun(XxlJobContext ctx);
 }

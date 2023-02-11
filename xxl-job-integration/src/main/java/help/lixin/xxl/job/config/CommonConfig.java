@@ -36,13 +36,17 @@ public class CommonConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public ILoginService loginService(XxlJobProperties xxlJobProperties, CookieMediator cookieMediator) {
+    public ILoginService loginService(XxlJobProperties xxlJobProperties,
+                                      //
+                                      CookieMediator cookieMediator) {
         return new LoginServiceImpl(xxlJobProperties, cookieMediator);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public IAddJobService addJobService(XxlJobProperties xxlJobProperties, CookieMediator cookieMediator) {
+    public IAddJobService addJobService(XxlJobProperties xxlJobProperties,
+                                        //
+                                        CookieMediator cookieMediator) {
         return new AddJobServerImpl(xxlJobProperties, cookieMediator);
     }
 
@@ -79,8 +83,14 @@ public class CommonConfig {
     }
 
     @Bean
-    public IRuningAddJobService runAddJobService(IAddJobService iAddJobService, IQueryExecutorService queryExecutorService, XxlJobProperties xxlJobProperties) {
-        return new RuningAddJobServerImpl(iAddJobService, queryExecutorService, xxlJobProperties);
+    public IRuningAddJobService runAddJobService(IAddJobService addJobService,
+                                                 //
+                                                 IAppNameProcess appNameProcess,
+                                                 //
+                                                 IQueryExecutorService queryExecutorService,
+                                                 //
+                                                 XxlJobProperties xxlJobProperties) {
+        return new RuningAddJobServerImpl(addJobService, appNameProcess, queryExecutorService, xxlJobProperties);
     }
 
     @Bean

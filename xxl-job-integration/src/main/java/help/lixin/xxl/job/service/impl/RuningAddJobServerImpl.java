@@ -1,5 +1,8 @@
 package help.lixin.xxl.job.service.impl;
 
+import com.xxl.job.core.executor.XxlJobExecutor;
+import help.lixin.xxl.job.executor.XxlJobSpringExecutor;
+import help.lixin.xxl.job.plugin.IAppNameProcess;
 import help.lixin.xxl.job.properties.JobTaskProperties;
 import help.lixin.xxl.job.properties.XxlJobProperties;
 import help.lixin.xxl.job.service.IAddJobService;
@@ -20,8 +23,6 @@ import org.springframework.util.StringUtils;
 public class RuningAddJobServerImpl implements IRuningAddJobService, ApplicationContextAware {
     private static final Logger logger = LoggerFactory.getLogger(RuningAddJobServerImpl.class);
 
-    private static final String XXL_JOB_EXECUTOR_CLASS_NAME = "xxlJobSpringExecutor";
-
     private IAddJobService addJobService;
 
     private ApplicationContext applicationContext;
@@ -30,14 +31,25 @@ public class RuningAddJobServerImpl implements IRuningAddJobService, Application
 
     private XxlJobProperties xxlJobProperties;
 
-    public RuningAddJobServerImpl(IAddJobService addJobService, IQueryExecutorService queryExecutorService, XxlJobProperties xxlJobProperties) {
+    private IAppNameProcess appNameProcess;
+
+    public RuningAddJobServerImpl(IAddJobService addJobService,
+                                  //
+                                  IAppNameProcess appNameProcess,
+                                  //
+                                  IQueryExecutorService queryExecutorService,
+                                  //
+                                  XxlJobProperties xxlJobProperties) {
         this.addJobService = addJobService;
         this.queryExecutorService = queryExecutorService;
         this.xxlJobProperties = xxlJobProperties;
+        if (null != appNameProcess) {
+            this.appNameProcess = appNameProcess;
+        }
     }
 
     @Override
-    public Integer add(XxlJobContext ctx) {
+    public Integer addAndRun(XxlJobContext ctx) {
         Integer jobId = null;
         try {
             AddJobContext addJobContext = (AddJobContext) ctx;
@@ -47,7 +59,14 @@ public class RuningAddJobServerImpl implements IRuningAddJobService, Application
                 if (!StringUtils.isEmpty(addJobContext.getJobGroupName())) {
                     appName = addJobContext.getJobGroupName();
                 }
-                Integer executorId = queryExecutorService.queryExecutorId(QueryExecuorContext.newBuilder().appName(appName).build());
+
+                if (null != appName && null != appNameProcess) {
+                    appName = appNameProcess.process(appName);
+                }
+
+                Integer executorId = queryExecutorService.queryExecutorId(QueryExecuorContext.newBuilder()
+                        //
+                        .appName(appName).build());
                 if (executorId == null) {
                     logger.warn("xxl-job RuningAddJobServerImpl addJob executorId is null. configure effective appName JobParam:{},appName:{}", ctx, xxlJobProperties.getAppName());
                     return null;
@@ -55,10 +74,19 @@ public class RuningAddJobServerImpl implements IRuningAddJobService, Application
                 addJobContext.setJobGroup(executorId);
                 jobId = addJobService.add(addJobContext);
             }
-            JobTaskProperties jobTaskProperties = XxlJobUtil.assembleRunJobTaskProperties(ctx);
-            ConfigurableApplicationContext configurableApplicationContext = (ConfigurableApplicationContext) applicationContext;
-            // XxlJobSpringExecutorExt xxlJobSpringExecutor = (XxlJobSpringExecutorExt) configurableApplicationContext.getBean(XXL_JOB_EXECUTOR_CLASS_NAME);
-            // xxlJobSpringExecutor.runJobHandlerMethodRepository(jobTaskProperties);
+
+            JobTaskProperties task = XxlJobUtil.assembleRunJobTaskProperties(ctx);
+
+            XxlJobExecutor xxlJobExecutor = applicationContext.getBean(XxlJobExecutor.class);
+            if (xxlJobExecutor instanceof XxlJobSpringExecutor) {
+                XxlJobSpringExecutor xxlJobSpringExecutor = (XxlJobSpringExecutor) xxlJobExecutor;
+                // 添加注任务
+                xxlJobSpringExecutor.addTask(task);
+                // 注册任务
+                xxlJobSpringExecutor.registerTask(task);
+                // 向xxl-job-admin重新注册所有的任务.
+                xxlJobSpringExecutor.startAutoRegister();
+            }
             logger.info("xxl-job RuningAddJobServerImpl add result:{},param:{}", jobId, ctx);
         } catch (Exception e) {
             logger.error("xxl-job RuningAddJobServerImpl add fail:{},param:{}", e, ctx);

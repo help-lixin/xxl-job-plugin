@@ -14,15 +14,16 @@ import java.util.Map;
 
 
 public class UpdateJobServiceImpl extends AbstractService implements IUpdateJobService {
+    private static final Logger logger = LoggerFactory.getLogger(UpdateJobServiceImpl.class);
+
+    private static final String UPDATE_JOB_URL = "jobinfo/update";
+    private XxlJobProperties xxlJobProperties;
+
     public UpdateJobServiceImpl(XxlJobProperties xxlJobProperties, CookieMediator cookieMediator) {
         super(cookieMediator);
         this.xxlJobProperties = xxlJobProperties;
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(UpdateJobServiceImpl.class);
-
-    private static final String UPDATE_JOB_URL = "jobinfo/update";
-    private XxlJobProperties xxlJobProperties;
 
     @Override
     public void updateJob(XxlJobContext ctx) throws Exception {

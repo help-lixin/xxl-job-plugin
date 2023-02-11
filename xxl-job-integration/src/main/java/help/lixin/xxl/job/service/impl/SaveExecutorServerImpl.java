@@ -20,6 +20,8 @@ import java.util.Map;
 public class SaveExecutorServerImpl extends AbstractService implements ISaveExecutorService {
     private static final Logger logger = LoggerFactory.getLogger(SaveExecutorServerImpl.class);
 
+    private static final String ADD_GROUP_URL = "jobgroup/save";
+
     private XxlJobProperties xxlJobProperties;
 
     private IAppNameProcess appNameProcess;
@@ -31,9 +33,6 @@ public class SaveExecutorServerImpl extends AbstractService implements ISaveExec
             this.appNameProcess = appNameProcess;
         }
     }
-
-    private static final String ADD_GROUP_URL = "jobgroup/save";
-
 
     @Override
     public void save(XxlJobContext ctx) throws Exception {

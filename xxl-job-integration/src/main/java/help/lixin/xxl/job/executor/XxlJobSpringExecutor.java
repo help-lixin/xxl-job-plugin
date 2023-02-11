@@ -96,6 +96,14 @@ public class XxlJobSpringExecutor extends com.xxl.job.core.executor.impl.XxlJobS
         }
     }
 
+    public void addTask(JobTaskProperties task) {
+        if (null == jobTasksListProperties) {
+            jobTasksListProperties = new JobTasksListProperties();
+        } else {
+            jobTasksListProperties.getTasks().add(task);
+        }
+    }
+
     public void startAutoRegister() {
         // 登录
         loginService.login(xxlJobProperties.getUsername(), xxlJobProperties.getPassword());
@@ -142,87 +150,92 @@ public class XxlJobSpringExecutor extends com.xxl.job.core.executor.impl.XxlJobS
         if (jobTasksListProperties == null || null == jobTasksListProperties.getTasks() || jobTasksListProperties.getTasks().size() == 0) {
             return;
         }
-        for (JobTaskProperties beanDefinitionName : jobTasksListProperties.getTasks()) {
-            String beanName = beanDefinitionName.getBeanName();
-            Object bean = null;
-            Map<Method, JobTaskProperties> annotatedMethods = null;   // referred to ：org.springframework.context.event.EventListenerMethodProcessor.processBean
-            try {
-                bean = getApplicationContext().getBean(beanName);
-                String jobName = beanDefinitionName.getExecutorMethod();
-                Method[] m = bean.getClass().getDeclaredMethods();
-                if (m == null) {
-                    logger.error("xxl-job method-jobhandler  definition null job [" + jobName + "].");
-                }
-                annotatedMethods = new HashMap<>();
-                for (int i = 0; i < m.length; i++) {
-                    String methodName = m[i].getName();
-                    if (methodName.equals(jobName)) {
-                        annotatedMethods.put(m[i], beanDefinitionName);
-                    }
-                }
-            } catch (NoSuchBeanDefinitionException e) {
-                logger.error("xxl-job bean-jobhandler resolve error for bean[" + beanName + "].", e);
+        for (JobTaskProperties task : jobTasksListProperties.getTasks()) {
+            registerTask(task);
+        }
+    }
 
-            } catch (Throwable ex) {
-                logger.error("erp-xxl-job method-jobhandler resolve error for bean[" + beanDefinitionName + "].", ex);
+
+    public void registerTask(JobTaskProperties task) {
+        String beanName = task.getBeanName();
+        Object bean = null;
+        Map<Method, JobTaskProperties> annotatedMethods = null;   // referred to ：org.springframework.context.event.EventListenerMethodProcessor.processBean
+        try {
+            bean = getApplicationContext().getBean(beanName);
+            String jobName = task.getExecutorMethod();
+            Method[] m = bean.getClass().getDeclaredMethods();
+            if (m == null) {
+                logger.error("xxl-job method-jobhandler  definition null job [" + jobName + "].");
             }
-            if (annotatedMethods == null || bean == null || annotatedMethods.isEmpty()) {
+            annotatedMethods = new HashMap<>();
+            for (int i = 0; i < m.length; i++) {
+                String methodName = m[i].getName();
+                if (methodName.equals(jobName)) {
+                    annotatedMethods.put(m[i], task);
+                }
+            }
+        } catch (NoSuchBeanDefinitionException e) {
+            logger.error("xxl-job bean-jobhandler resolve error for bean[" + beanName + "].", e);
+
+        } catch (Throwable ex) {
+            logger.error("erp-xxl-job method-jobhandler resolve error for bean[" + task + "].", ex);
+        }
+        if (annotatedMethods == null || bean == null || annotatedMethods.isEmpty()) {
+            return;
+        }
+
+        for (Map.Entry<Method, JobTaskProperties> methodXxlJobEntry : annotatedMethods.entrySet()) {
+            Method executeMethod = methodXxlJobEntry.getKey();
+            JobTaskProperties xxlJob = methodXxlJobEntry.getValue();
+            if (xxlJob == null) {
                 return;
             }
+            String oldJobName = xxlJob.getExecutorMethod();
+            Class<?> clazz = bean.getClass();
+            String methodName = executeMethod.getName();
+            if (oldJobName == null || oldJobName.trim().length() == 0) {
+                throw new RuntimeException("erp-xxl-job method-jobhandler name invalid, for[" + clazz + "#" + methodName + "] .");
+            }
 
-            for (Map.Entry<Method, JobTaskProperties> methodXxlJobEntry : annotatedMethods.entrySet()) {
-                Method executeMethod = methodXxlJobEntry.getKey();
-                JobTaskProperties xxlJob = methodXxlJobEntry.getValue();
-                if (xxlJob == null) {
-                    return;
+            // 预处理下表达式
+            oldJobName = getApplicationContext().getEnvironment().resolvePlaceholders(oldJobName);
+            String name = oldJobName;
+            if (loadJobHandler(name) != null) {
+                logger.info("erp-xxl-job jobhandler[" + name + "] naming conflicts.");
+                return;
+            }
+            // 对beanName进行改造,因为,在向xxl-job-admin注册时,会用到这个名称
+            xxlJob.setExecutorMethod(name);
+
+            executeMethod.setAccessible(true);
+
+            // init and destroy
+            Method initMethod = null;
+            Method destroyMethod = null;
+
+            if (xxlJob.getInitMethod().trim().length() > 0) {
+                try {
+                    initMethod = clazz.getDeclaredMethod(xxlJob.getInitMethod());
+                    initMethod.setAccessible(true);
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException("erp-xxl-job method-jobhandler initMethod invalid, for[" + clazz + "#" + methodName + "] .");
                 }
-                String oldJobName = xxlJob.getExecutorMethod();
-                Class<?> clazz = bean.getClass();
-                String methodName = executeMethod.getName();
-                if (oldJobName == null || oldJobName.trim().length() == 0) {
-                    throw new RuntimeException("erp-xxl-job method-jobhandler name invalid, for[" + clazz + "#" + methodName + "] .");
+            }
+
+            if (xxlJob.getDestroyMethod().trim().length() > 0) {
+                try {
+                    destroyMethod = clazz.getDeclaredMethod(xxlJob.getDestroyMethod());
+                    destroyMethod.setAccessible(true);
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException("erp-xxl-job method-jobhandler destroyMethod invalid, for[" + clazz + "#" + methodName + "] .");
                 }
+            }
 
-                // 预处理下表达式
-                oldJobName = getApplicationContext().getEnvironment().resolvePlaceholders(oldJobName);
-                String name = oldJobName;
-                if (loadJobHandler(name) != null) {
-                    logger.info("erp-xxl-job jobhandler[" + name + "] naming conflicts.");
-                    return;
-                }
-                // 对beanName进行改造,因为,在向xxl-job-admin注册时,会用到这个名称
-                xxlJob.setExecutorMethod(name);
-
-                executeMethod.setAccessible(true);
-
-                // init and destroy
-                Method initMethod = null;
-                Method destroyMethod = null;
-
-                if (xxlJob.getInitMethod().trim().length() > 0) {
-                    try {
-                        initMethod = clazz.getDeclaredMethod(xxlJob.getInitMethod());
-                        initMethod.setAccessible(true);
-                    } catch (NoSuchMethodException e) {
-                        throw new RuntimeException("erp-xxl-job method-jobhandler initMethod invalid, for[" + clazz + "#" + methodName + "] .");
-                    }
-                }
-
-                if (xxlJob.getDestroyMethod().trim().length() > 0) {
-                    try {
-                        destroyMethod = clazz.getDeclaredMethod(xxlJob.getDestroyMethod());
-                        destroyMethod.setAccessible(true);
-                    } catch (NoSuchMethodException e) {
-                        throw new RuntimeException("erp-xxl-job method-jobhandler destroyMethod invalid, for[" + clazz + "#" + methodName + "] .");
-                    }
-                }
-
-                if (null != jobInvokeService) {
-                    // registry jobhandler
-                    registJobHandler(name, new help.lixin.xxl.job.handler.MethodJobHandler(jobInvokeService, bean, executeMethod, initMethod, destroyMethod));
-                } else {
-                    registJobHandler(name, new com.xxl.job.core.handler.impl.MethodJobHandler(bean, executeMethod, initMethod, destroyMethod));
-                }
+            if (null != jobInvokeService) {
+                // registry jobhandler
+                registJobHandler(name, new help.lixin.xxl.job.handler.MethodJobHandler(jobInvokeService, bean, executeMethod, initMethod, destroyMethod));
+            } else {
+                registJobHandler(name, new com.xxl.job.core.handler.impl.MethodJobHandler(bean, executeMethod, initMethod, destroyMethod));
             }
         }
     }
