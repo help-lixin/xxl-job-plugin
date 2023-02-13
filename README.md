@@ -1,5 +1,5 @@
 ### 1. 项目背景
-xxl-job是比较流的定时任务管理器,但是,也有一些烦锁的事情,就是需要人工在后台(xxl-job-admin)添加执行器和任务,能否在项目启动时候自动注册呢?该组件主要解决这个功能,解决烦锁的人工干预过程.
+xxl-job是比较流行定时任务管理器,但是,也有一些烦锁的事情,就是需要人工在后台(xxl-job-admin)添加执行器和任务,能否在项目启动时候自动注册呢?该组件主要解决这个功能,解决烦锁的人工干预过程.
 
 ### 2. 如何集成?
 1) 添加依赖
@@ -52,7 +52,7 @@ public interface IAppNameProcess {
 ```
 
 4) MethodJobHandler定制
-> xxl-job-admin会回调你注册的任务,如果你对任务有一些特殊处理,比较,要用多线程去处理,又或者,每一个多线程要配置租户信息到线程上下文,你可以实现:IJobInvokeService接口,并把它交给Spring容器即可. 
+> xxl-job-admin会回调注册的任务,如果对任务有一些特殊处理,比如:某某环境下有3个租户,这个定时任务,实际是需要照顾到这3个租户来着,所以,你可以运用多线程,为每一个租户配置一个线程,这个逻辑只需要你实现:IJobInvokeService,并扔给Spring即可.   
 
 ```
 public class JobInvokeContext {
@@ -70,8 +70,8 @@ public interface IJobInvokeService {
 ```
 xxl.job.isLazy=true
 
-# 在某些场景下,我们的微服务,可能还没有来得及全部初始化(比如:数据源),可是,进程启动时,已经向xxl-job-admin进行了注册,正好xxl-job-admin也开始派发了任务.
-# 这时候,可能会出现错误,你可以配置上面这个配置项,这个配置项的目的是等待一个事件(BootstrapFinishEvent)触发后,才真正的向xxl-job-admin进行注册.     
+# 在某些场景下,我们的微服务,可能还没有来得及全部初始化(比如:数据源),可是,进程启动时,已经向xxl-job-admin进行了注册,而此时,是一个频繁任务,恰好xxl-job-admin也开始派发了任务.
+# 这时候,可能会出现错误,你可以配置上面这个配置项,这个配置的目的是等待一个事件(BootstrapFinishEvent)触发后,才真正的向xxl-job-admin进行注册.      
 ```
 ### 4. 代码贡献者
 感谢[清源](https://github.com/caiqingyuan95),对xxl-job-plugin部份代码的贡献.  
